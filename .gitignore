@@ -1,0 +1,6 @@
+# P1_1
+*.crt
+*.key
+*.cnf
+*.csr
+serial
