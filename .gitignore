@@ -3,4 +3,8 @@
 *.key
 *.cnf
 *.csr
+*.crl
 serial
+crlnumber*
+index.txt*
+*.zip
