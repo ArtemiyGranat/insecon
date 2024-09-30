@@ -92,3 +92,6 @@ openssl x509 -req -days 90 -CA "$name"-"$group"-intr.crt -CAkey \
     basic.csr -out "$name"-"$group"-basic.crt -passin pass:"$name" \
     -extensions v3_basic_ext -extfile "$basic_conf"
 
+zip "$name"-"$group"-p1_1.zip "$name"-"$group"-ca.key "$name"-"$group"-ca.crt \
+    "$name"-"$group"-intr.key "$name"-"$group"-intr.crt \
+    "$name"-"$group"-basic.key "$name"-"$group"-basic.crt
