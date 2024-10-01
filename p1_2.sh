@@ -142,6 +142,9 @@ openssl x509 -req -days 90 -CA "$name"-"$group"-intr.crt -CAkey \
 openssl ca -config "$crl_conf" -cert "$name"-"$group"-intr.crt -keyfile \
     "$name"-"$group"-intr.key -revoke "$name"-"$group"-crl-revoked.crt \
     -passin pass:"$name"
+openssl ca -config "$crl_conf" -cert "$name"-"$group"-intr.crt -keyfile \
+    "$name"-"$group"-intr.key -valid "$name"-"$group"-crl-valid.crt \
+    -passin pass:"$name"
 
 openssl ca -config "$crl_conf" -crlexts crl_ext -cert "$name"-"$group"-intr.crt \
     -keyfile "$name"-"$group"-intr.key -gencrl -out "$name"-"$group".crl \
