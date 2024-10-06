@@ -4,71 +4,11 @@ bash -x ./p1_1.sh
 
 name=granatam
 group=msp241
+prefix="$name"-"$group"
 email=a.granat@ispras.ru
 dir=$(pwd)
 
-shared_conf=openssl-shared-2.cnf
-crl_valid_conf=openssl-crl-valid.cnf
-crl_revoked_conf=openssl-crl-revoked.cnf
-crl_conf=openssl-crl.cnf
-
-# Generate openssl-shared.cnf
-cat << EOF > $shared_conf
-[ req ]
-prompt = no
-distinguished_name = req_distinguished_name
-
-[ req_distinguished_name ]
-C = RU
-ST = Moscow
-L = Moscow
-O = $name
-OU = $name P1_2
-emailAddress = $email
-EOF
-
-cat $shared_conf > $crl_valid_conf
-cat $shared_conf > $crl_revoked_conf
-
-cat << EOF >> $crl_valid_conf
-CN = $name CRL Valid
-
-[ v3_crl_valid_req ]
-basicConstraints    = CA:false
-keyUsage            = critical,digitalSignature
-extendedKeyUsage    = critical,serverAuth,clientAuth
-subjectAltName      = DNS:crl.valid.$name.ru
-crlDistributionPoints   = URI:http://crl.$name.ru
-
-[ v3_crl_valid_ext ]
-subjectKeyIdentifier=hash
-authorityKeyIdentifier=keyid,issuer
-basicConstraints    = CA:false
-keyUsage            = critical,digitalSignature
-extendedKeyUsage    = critical,serverAuth,clientAuth
-subjectAltName      = DNS:crl.valid.$name.ru
-crlDistributionPoints   = URI:http://crl.$name.ru
-EOF
-
-cat << EOF >> $crl_revoked_conf
-CN = $name CRL Revoked
-
-[ v3_crl_revoked_req ]
-basicConstraints    = CA:false
-keyUsage            = critical,digitalSignature
-extendedKeyUsage    = critical,serverAuth,clientAuth
-subjectAltName      = DNS:crl.revoked.$name.ru
-crlDistributionPoints   = URI:http://crl.$name.ru
-
-[ v3_crl_revoked_ext ]
-subjectKeyIdentifier=hash
-authorityKeyIdentifier=keyid,issuer
-basicConstraints    = CA:false
-keyUsage            = critical,digitalSignature
-extendedKeyUsage    = critical,serverAuth,clientAuth
-subjectAltName      = DNS:crl.revoked.$name.ru
-crlDistributionPoints   = URI:http://crl.$name.ru
-EOF
+crl_conf=crl.cnf
 
 cat << EOF > $crl_conf
 [ ca ]
@@ -87,8 +27,8 @@ certificate = $dir/cacert.pem # The CA certificate
 serial = $dir/serial # The current serial number
 crlnumber = $dir/crlnumber # the current crl number
 
-crl = $dir/$name-$group.crl # The current CRL
-private_key	= $dir/$name-$group-ca.key # The private key
+crl = $dir/$prefix.crl # The current CRL
+private_key	= $dir/$prefix-ca.key # The private key
 
 x509_extensions = usr_cert # The extensions to add to the cert
 
@@ -123,45 +63,50 @@ EOF
 touch index.txt
 echo 10 > crlnumber
 
-openssl genrsa -passout pass:"$name" -out "$name"-"$group"-crl-valid.key 2048
-openssl req -new -key "$name"-"$group"-crl-valid.key -config "$crl_valid_conf" \
-    -reqexts v3_crl_valid_req -out crl-valid.csr -passin pass:"$name"
-openssl x509 -req -days 90 -CA "$name"-"$group"-intr.crt -CAkey \
-    "$name"-"$group"-intr.key -CAcreateserial -CAserial serial -in \
-    crl-valid.csr -out "$name"-"$group"-crl-valid.crt -passin pass:"$name" \
-    -extensions v3_crl_valid_ext -extfile "$crl_valid_conf"
+openssl genrsa -passout pass:"$name" -out "$prefix"-crl-valid.key 2048
+openssl req -new -key "$prefix"-crl-valid.key -passin pass:"$name" \
+     -subj "/C=RU/ST=Moscow/L=Moscow/O=$name/OU=$name P1_2/CN=$name CRL Valid/emailAddress=$email" \
+     -addext "basicConstraints=CA:FALSE" \
+     -addext "keyUsage=critical,digitalSignature" \
+     -addext "extendedKeyUsage=critical,serverAuth,clientAuth" \
+     -addext "subjectAltName=DNS:crl.valid.$name.ru" \
+     -addext "crlDistributionPoints=URI:http://crl.$name.ru" \
+     -out "$prefix"-crl-valid.csr
+openssl x509 -req -days 90 -CA "$prefix"-intr.crt -CAkey "$prefix"-intr.key \
+    -CAcreateserial -CAserial serial -in "$prefix"-crl-valid.csr \
+    -out "$prefix"-crl-valid.crt -passin pass:"$name" -copy_extensions copy
 
-openssl genrsa -passout pass:"$name" -out "$name"-"$group"-crl-revoked.key 2048
-openssl req -new -key "$name"-"$group"-crl-revoked.key -config "$crl_revoked_conf" \
-    -reqexts v3_crl_revoked_req -out crl-revoked.csr -passin pass:"$name"
-openssl x509 -req -days 90 -CA "$name"-"$group"-intr.crt -CAkey \
-    "$name"-"$group"-intr.key -CAcreateserial -CAserial serial -in \
-    crl-revoked.csr -out "$name"-"$group"-crl-revoked.crt -passin pass:"$name" \
-    -extensions v3_crl_revoked_ext -extfile "$crl_revoked_conf"
+openssl genrsa -passout pass:"$name" -out "$prefix"-crl-revoked.key 2048
+openssl req -new -key "$prefix"-crl-valid.key -passin pass:"$name" \
+     -subj "/C=RU/ST=Moscow/L=Moscow/O=$name/OU=$name P1_2/CN=$name CRL Revoked/emailAddress=$email" \
+     -addext "basicConstraints=CA:FALSE" \
+     -addext "keyUsage=critical,digitalSignature" \
+     -addext "extendedKeyUsage=critical,serverAuth,clientAuth" \
+     -addext "subjectAltName=DNS:crl.revoked.$name.ru" \
+     -addext "crlDistributionPoints=URI:http://crl.$name.ru" \
+     -out "$prefix"-crl-revoked.csr
+openssl x509 -req -days 90 -CA "$prefix"-intr.crt -CAkey "$prefix"-intr.key \
+    -CAcreateserial -CAserial serial -in "$prefix"-crl-revoked.csr \
+    -out "$prefix"-crl-revoked.crt -passin pass:"$name" -copy_extensions copy
 
-openssl ca -config "$crl_conf" -cert "$name"-"$group"-intr.crt -keyfile \
-    "$name"-"$group"-intr.key -revoke "$name"-"$group"-crl-revoked.crt \
-    -passin pass:"$name"
-openssl ca -config "$crl_conf" -cert "$name"-"$group"-intr.crt -keyfile \
-    "$name"-"$group"-intr.key -valid "$name"-"$group"-crl-valid.crt \
-    -passin pass:"$name"
+openssl ca -config "$crl_conf" -cert "$prefix"-intr.crt -keyfile \
+    "$prefix"-intr.key -revoke "$prefix"-crl-revoked.crt -passin pass:"$name"
+openssl ca -config "$crl_conf" -cert "$prefix"-intr.crt -keyfile \
+    "$prefix"-intr.key -valid "$prefix"-crl-valid.crt -passin pass:"$name"
 
-openssl ca -config "$crl_conf" -crlexts crl_ext -cert "$name"-"$group"-intr.crt \
-    -keyfile "$name"-"$group"-intr.key -gencrl -out "$name"-"$group".crl \
-    -passin pass:"$name"
+openssl ca -config "$crl_conf" -crlexts crl_ext -cert "$prefix"-intr.crt \
+    -keyfile "$prefix"-intr.key -gencrl -out "$prefix".crl -passin pass:"$name"
 
-cat "$name"-"$group"-ca.crt "$name"-"$group"-intr.crt \
-    "$name"-"$group"-crl-valid.crt "$name"-"$group"-crl-revoked.crt > \
-    "$name"-"$group"-chain.crt
+cat "$prefix"-ca.crt "$prefix"-intr.crt > "$prefix"-chain.crt
 
-openssl verify -crl_check -CRLfile "$name"-"$group".crl -CAfile \
-    "$name"-"$group"-chain.crt "$name"-"$group"-crl-valid.crt
-openssl verify -crl_check -CRLfile "$name"-"$group".crl -CAfile \
-    "$name"-"$group"-chain.crt "$name"-"$group"-crl-revoked.crt
+openssl verify -crl_check -CRLfile "$prefix".crl -CAfile "$prefix"-chain.crt \
+    "$prefix"-crl-valid.crt
+openssl verify -crl_check -CRLfile "$prefix".crl -CAfile "$prefix"-chain.crt \
+    "$prefix"-crl-revoked.crt
 
-rm "$name"-"$group"-p1_2.zip
+rm "$prefix"-p1_2.zip
 
-zip "$name"-"$group"-p1_2.zip "$name"-"$group"-crl-valid.key \
-    "$name"-"$group"-crl-valid.crt "$name"-"$group"-crl-revoked.key \
-    "$name"-"$group"-crl-revoked.crt "$name"-"$group".crl \
-    "$name"-"$group"-chain.crt
+zip "$prefix"-p1_2.zip "$prefix"-crl-valid.key \
+    "$prefix"-crl-valid.crt "$prefix"-crl-revoked.key \
+    "$prefix"-crl-revoked.crt "$prefix".crl \
+    "$prefix"-chain.crt
