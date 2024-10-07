@@ -7,7 +7,7 @@ email=a.granat@ispras.ru
 
 openssl genrsa -aes256 -passout pass:"$name" -out "$prefix"-ca.key 4096
 openssl req -x509 -new -key "$prefix"-ca.key -passin pass:"$name" \
-    -days 1095 -subj "/C=RU/ST=Moscow/L=Moscow/O=$name/OU=$name P1_1/CN=$name CA/emailAddress=$name" \
+    -days 1095 -subj "/C=RU/ST=Moscow/L=Moscow/O=$name/OU=$name P1_1/CN=$name CA/emailAddress=$email" \
     -addext "basicConstraints=critical,CA:TRUE" \
     -addext "keyUsage=critical,digitalSignature,keyCertSign,cRLSign" \
     -out "$prefix"-ca.crt
