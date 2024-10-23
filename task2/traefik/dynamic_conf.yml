@@ -1,0 +1,26 @@
+http:
+  routers:
+    to-dvwa:
+      rule: "Host(`localhost`) && PathPrefix(`/`)"
+      middlewares:
+      - waf
+      service: dvwa
+
+  middlewares:
+    waf:
+      plugin:
+        coraza:
+          directives:
+            - SecRuleEngine On
+            - SecDebugLog /dev/stdout
+            - SecDebugLogLevel 9
+            - SecRequestBodyAccess On
+            - SecResponseBodyAccess On
+            - SecResponseBodyMimeType application/json
+            # - SecRule ARGS "@detectSQLi" "deny"
+
+  services:
+    dvwa:
+      loadBalancer:
+        servers:
+        - url: http://dvwa

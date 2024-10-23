@@ -1,0 +1,24 @@
+services:
+  traefik:
+    image: traefik
+    container_name: traefik
+    ports:
+      - 127.0.0.1:80:80
+      - 127.0.0.1:8080:8080
+    volumes:
+      - ./traefik:/etc/traefik/
+  dvwa:
+    image: yutony/web-dvwa:v1
+    build: 
+      dockerfile: ./Dockerfile.dvwa
+    container_name: dvwa
+  kali:
+    image: yutony/kali:v1
+    build: 
+      dockerfile: ./Dockerfile.kali
+    container_name: kali
+    network_mode: host
+    volumes:
+      - ./kali-data:/kali-data
+    working_dir: /kali-data
+    tty: true

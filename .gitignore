@@ -1,4 +1,3 @@
-# P1_1
 *.crt
 *.key
 *.cnf
@@ -9,3 +8,6 @@ crlnumber*
 index.txt*
 *.zip
 *.log
+
+# Some OS X files
+.DS_Store

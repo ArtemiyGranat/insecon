@@ -1,0 +1,19 @@
+log:
+  level: DEBUG
+
+api:
+  insecure: true
+
+entryPoints:
+  web:
+    address: :80
+
+providers:
+  file:
+    filename: /etc/traefik/dynamic_conf.yml
+
+experimental:
+  plugins:
+    coraza:
+      moduleName: github.com/jcchavezs/coraza-http-wasm-traefik
+      version: v0.2.2
