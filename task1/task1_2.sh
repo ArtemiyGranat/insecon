@@ -62,8 +62,8 @@ authorityKeyIdentifier=keyid,issuer
 EOF
 
 # These files must exist for CRL gen
-touch index.txt
-echo 10 > crlnumber
+touch "$dir/index.txt"
+echo 10 > "$dir/crlnumber"
 
 # Generate CRL valid certificate
 openssl genrsa -passout pass:"$name" -out "$prefix"-crl-valid.key 2048

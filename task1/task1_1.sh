@@ -23,7 +23,7 @@ openssl x509 -req -days 365 -CA "$prefix"-ca.crt -CAkey "$prefix"-ca.key \
     -out "$prefix"-intr.crt -passin pass:"$name" -copy_extensions copy
 
 openssl genrsa -passout pass:"$name" -out "$prefix"-basic.key 2048
-openssl req -new -key "$prefix"-basic.key -config "$basic_conf" \
+openssl req -new -key "$prefix"-basic.key -passin pass:"$name" \
     -subj "/C=RU/ST=Moscow/L=Moscow/O=$name/OU=$name P1_1/CN=$name Basic/emailAddress=$email" \
     -addext "basicConstraints=CA:FALSE" \
     -addext "keyUsage=critical,digitalSignature" \

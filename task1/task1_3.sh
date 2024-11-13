@@ -84,9 +84,11 @@ mkdir -p /var/www/"$prefix"-revoked
 echo Revoked! > /var/www/"$prefix"-revoked/index.html
 
 cp /etc/hosts /etc/hosts_backup
-echo 127.0.0.1 ocsp.$name.ru >> /etc/hosts
-echo 127.0.0.1 ocsp.valid.$name.ru >> /etc/hosts
-echo 127.0.0.1 ocsp.revoked.$name.ru >> /etc/hosts
+{
+    echo 127.0.0.1 ocsp.$name.ru
+    echo 127.0.0.1 ocsp.valid.$name.ru
+    echo 127.0.0.1 ocsp.revoked.$name.ru
+} >> /etc/hosts
 
 cp "$BREW_PREFIX"/etc/nginx/nginx.conf "$BREW_PREFIX"/etc/nginx/nginx.conf.backup
 
@@ -167,12 +169,11 @@ openssl ocsp -url http://ocsp."$name".ru:2560 -CAfile "$prefix"-chain.crt \
 openssl ocsp -url http://ocsp."$name".ru:2560 -CAfile "$prefix"-chain.crt \
     -issuer "$prefix"-intr.crt -cert "$prefix"-ocsp-revoked.crt
 
-var=
-read  -n 1 -p "Waiting for Wireshark (valid)" var
+read  -n 1 -s -p "Waiting for Wireshark (valid)"
 export SSLKEYLOFILE=$prefix-ocsp-valid.log
 firefox https://ocsp.valid.$name.ru
 
-read  -n 1 -p "Waiting for Wireshark (revoked)" var
+read  -n 1 -s -p "Waiting for Wireshark (revoked)"
 export SSLKEYLOFILE=$prefix-ocsp-revoked.log
 firefox https://ocsp.revoked.$name.ru
 
