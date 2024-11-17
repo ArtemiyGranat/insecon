@@ -9,5 +9,7 @@ index.txt*
 *.zip
 *.log
 
+squid.conf
+
 # Some OS X files
 .DS_Store
