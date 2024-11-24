@@ -7,7 +7,7 @@ prefix="$name"-"$group"
 proxy="http://127.0.0.1:3128"
 squid_conf=squid.conf
 
-cat << EOF > $squid_conf
+cat << EOF > "$squid_conf"
 acl localnet src 0.0.0.1-0.255.255.255	# RFC 1122 "this" network (LAN)
 acl localnet src 10.0.0.0/8		# RFC 1918 local private network (LAN)
 acl localnet src 100.64.0.0/10		# RFC 6598 shared address space (CGN)
@@ -51,16 +51,19 @@ refresh_pattern -i (/cgi-bin/|\?) 0	0%	0
 refresh_pattern .		0	20%	4320
 EOF
 
-docker run -d --name squid -v .:/squid -p 3128:3128 -it yutony/squid:4.10 squid -f /squid/squid.conf -NYC
+docker run -d --name squid -v .:/squid -p 3128:3128 -it yutony/squid:4.10 \
+    squid -f /squid/squid.conf -NYC
 
-read -n 1 -s -p "Open Wireshark, start capturing traffic on the any interface and press any key"
+# shellcheck disable=SC2162
+read -p "Open Wireshark, start capturing traffic on the any interface and \
+press Enter"
 
 curl -v --proxy $proxy ident.me --user-agent $name
 curl -v --proxy $proxy httpbin.org/get?bio=$name
 
-read -n 1 -s -p "Save trace to $prefix-acl.pcapng, then press any key"
+read -r -p "Save trace to $prefix-acl.pcapng, then press Enter"
 
-docker rm $(docker stop squid)
+docker rm "$(docker stop squid)"
 
 cat << EOF > $squid_conf
 acl localnet src 0.0.0.1-0.255.255.255	# RFC 1122 "this" network (LAN)
@@ -106,15 +109,16 @@ refresh_pattern -i (/cgi-bin/|\?) 0	0%	0
 refresh_pattern .		0	20%	4320
 EOF
 
-docker run -d --name squid -v .:/squid -p 3128:3128 -it yutony/squid:4.10 squid -f /squid/$squid_conf -NYC
+docker run -d --name squid -v .:/squid -p 3128:3128 -it yutony/squid:4.10 \
+    squid -f /squid/$squid_conf -NYC
 
-read -n 1 -s -p "Start capturing traffic on the any interface and press any key"
+read -r -p "Start capturing traffic on the any interface and press Enter"
 
 curl --proxy $proxy httpbin.org/ip
 
-read -n 1 -s -p "Save trace to $prefix-ua.pcapng, then press any key"
+read -r -p "Save trace to $prefix-ua.pcapng, then press Enter"
 
-docker rm $(docker stop squid)
+docker rm "$(docker stop squid)"
 
 rm $squid_conf
 

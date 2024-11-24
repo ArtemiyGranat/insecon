@@ -2,7 +2,7 @@
 
 name=granatam
 group=msp241
-prefix="$name"-"$group"
+prefix="$name-$group"
 email=a.granat@ispras.ru
 
 openssl genrsa -aes256 -passout pass:"$name" -out "$prefix"-ca.key 4096

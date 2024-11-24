@@ -12,7 +12,7 @@ fi
 name=granatam
 group=msp241
 email=a.granat@ispras.ru
-prefix="$name"-"$group"
+prefix="$name-$group"
 dir=$(pwd)
 crl_conf=crl.cnf
 
@@ -169,13 +169,19 @@ openssl ocsp -url http://ocsp."$name".ru:2560 -CAfile "$prefix"-chain.crt \
 openssl ocsp -url http://ocsp."$name".ru:2560 -CAfile "$prefix"-chain.crt \
     -issuer "$prefix"-intr.crt -cert "$prefix"-ocsp-revoked.crt
 
-read  -n 1 -s -p "Waiting for Wireshark (valid)"
+# shellcheck disable=SC2162
+read -p "Open Wireshark, start capturing traffic on the lo interface and \
+press Enter"
 export SSLKEYLOFILE=$prefix-ocsp-valid.log
 firefox https://ocsp.valid.$name.ru
 
-read  -n 1 -s -p "Waiting for Wireshark (revoked)"
+# shellcheck disable=SC2162
+read -p "Export the SSLKEYLOGFILE as it said in the assignment, save trace to \
+$prefix-ocsp-valid.pcapng file, then start capturing again and press Enter"
 export SSLKEYLOFILE=$prefix-ocsp-revoked.log
 firefox https://ocsp.revoked.$name.ru
+
+read -r -p "Save trace to $prefix-ocsp-revoked.pcapng file"
 
 rm -rf /var/www/$prefix-valid /var/www/$prefix-revoked
 
@@ -184,3 +190,5 @@ mv "$BREW_PREFIX"/etc/nginx/nginx.conf.backup "$BREW_PREFIX"/etc/nginx/nginx.con
 
 rm "$BREW_PREFIX"/etc/ca-certificates/trust-source/anchors/"$prefix"-intr.crt
 trust extract-compat
+
+# TODO: archive needed files into $prefix-p1_3.zip

@@ -17,8 +17,7 @@ execute_sql_query_weevely()
 # Start DVWA containers in detached mode
 docker compose up -d
 
-read -n 1 -s -p "Create the database on http://localhost/setup.php, then \
-press any key"
+read -r -p "Create database on http://localhost/setup.php, then press Enter"
 
 # Retrieve a list of all users from the DVWA database
 execute_sql_query_weevely "select * from users"
@@ -31,14 +30,16 @@ execute_sql_query_weevely \
 # Verify that the new user has been successfully inserted
 execute_sql_query_weevely "select * from users"
 
-read -n 1 -s -p "Login on http://localhost/login.php, then open Wireshark, \
-start capturing traffic on the lo interface and press any key"
+# shellcheck disable=SC2162
+read -p "Login on http://localhost/login.php, then open Wireshark, \
+start capturing traffic on the lo interface and press Enter"
 
 # Submit a SQL injection through the web interface
 firefox "$sqli_url"
 
-read -n 1 -s -p "Uncomment the last line of traefik/dynamic_conf.yml, open \
-Wireshark, start capturing traffic on the loopback interface and press any key"
+# shellcheck disable=SC2162
+read -p "Uncomment the last line of traefik/dynamic_conf.yml, open \
+Wireshark, start capturing traffic on the loopback interface and press Enter"
 
 # Submit a SQL injection through the web interface again
 firefox "$sqli_url"

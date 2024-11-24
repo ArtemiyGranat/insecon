@@ -5,7 +5,7 @@ bash -x ./p1_1.sh
 # Credentials
 name=granatam
 group=msp241
-prefix="$name"-"$group"
+prefix="$name-$group"
 email=a.granat@ispras.ru
 dir=$(pwd)
 
